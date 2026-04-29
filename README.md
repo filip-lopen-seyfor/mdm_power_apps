@@ -25,7 +25,7 @@ The solution follows a layered approach:
 
 export/
 │
-├─MDMApp.zip # Solution ready to download
+├── MDMApp.zip # Solution ready to download
 
 solution/
 │
