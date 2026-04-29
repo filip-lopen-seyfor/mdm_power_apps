@@ -1,4 +1,4 @@
-# MDM Solution – Power Platform (Diploma Thesis)
+# MDM Solution – Power Platform
 
 This repository contains an exported solution of a Master Data Management (MDM) prototype implemented using Microsoft Power Platform. The solution was developed as part of a diploma thesis focused on designing and validating an MDM approach for HR master data.
 
