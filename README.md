@@ -80,4 +80,4 @@ This solution was developed as part of a diploma thesis focused on:
 
 ## 👤 Author
 
-Filip Lopen
+Filip Lopeň
