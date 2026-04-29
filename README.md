@@ -23,6 +23,7 @@ The solution follows a layered approach:
 
 ## 📁 Repository Structure
 
+---
 export/
 │
 ├── MDMApp.zip # Solution ready to download
@@ -37,6 +38,7 @@ solution/
 ├── customizations.xml # Dataverse customizations
 ├── solution.xml # Solution definition
 └── [Content_Types].xml # Internal metadata
+---
 
 ## ⚙️ Key Components
 
