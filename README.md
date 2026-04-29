@@ -22,8 +22,7 @@ The solution follows a layered approach:
 - **Gold layer** – consolidated and curated master data
 
 ## 📁 Repository Structure
-
----
+```
 export/
 │
 ├── MDMApp.zip # Solution ready to download
@@ -38,8 +37,7 @@ solution/
 ├── customizations.xml # Dataverse customizations
 ├── solution.xml # Solution definition
 └── [Content_Types].xml # Internal metadata
----
-
+```
 ## ⚙️ Key Components
 
 - **Power Apps**
