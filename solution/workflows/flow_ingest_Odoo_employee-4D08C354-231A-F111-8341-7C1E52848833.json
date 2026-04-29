@@ -1,0 +1,532 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_postgresql": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedpostgresql_863a4"
+        },
+        "api": {
+          "name": "shared_postgresql"
+        }
+      },
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "c4b1e8f3-d7ac-4324-95e8-f03b49a2d3a8"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_rows": {
+          "runAfter": {
+            "Apply_to_each_-_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "baee8f6e-8fd8-45c5-8ae0-3e59c899ffcd"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "table": "public.hr_employee"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_postgresql",
+              "operationId": "GetItems",
+              "connectionName": "shared_postgresql"
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('Get_rows')?['body/value']",
+          "actions": {
+            "List_rows": {
+              "metadata": {
+                "operationMetadataId": "ac45cb31-9168-4875-a85d-1a90bcee2543"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_odoo_hr_employees",
+                  "$filter": "cr1c4_id eq '@{string(items('Apply_to_each')?['id'])}'"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Add_a_new_row": {
+                  "metadata": {
+                    "operationMetadataId": "36cbffdb-97d1-4185-8452-adf420e30a6c"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_odoo_hr_employees",
+                      "item/cr1c4_id": "@items('Apply_to_each')?['id']",
+                      "item/cr1c4_birthday": "@items('Apply_to_each')?['birthday']",
+                      "item/cr1c4_change_status": 623500000,
+                      "item/cr1c4_company_id": "@items('Apply_to_each')?['company_id']",
+                      "item/cr1c4_create_date": "@items('Apply_to_each')?['create_date']",
+                      "item/cr1c4_current_version_id": "@items('Apply_to_each')?['current_version_id']",
+                      "item/cr1c4_data_source_id": "1",
+                      "item/cr1c4_legal_name": "@items('Apply_to_each')?['legal_name']",
+                      "item/cr1c4_name": "@items('Apply_to_each')?['name']",
+                      "item/cr1c4_private_mail": "@items('Apply_to_each')?['private_email']",
+                      "item/cr1c4_work_email": "@items('Apply_to_each')?['work_email']",
+                      "item/cr1c4_work_phone": "@items('Apply_to_each')?['work_phone']",
+                      "item/cr1c4_write_date": "@items('Apply_to_each')?['write_date']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "List_rows_-_Snapshot_Employee": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "cr1c4_bronze_odoo_employee_snapshots",
+                        "$filter": "cr1c4_id eq '@{items('Apply_to_each')?['id']}'"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "ListRecords",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  },
+                  "Condition_2": {
+                    "actions": {},
+                    "runAfter": {
+                      "List_rows_-_Snapshot_Employee": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Condition_3": {
+                          "actions": {
+                            "Update_a_row": {
+                              "metadata": {
+                                "operationMetadataId": "95fa49d1-8ae3-4c73-9464-ac1487e8e773"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "entityName": "cr1c4_bronze_odoo_hr_employees",
+                                  "recordId": "@first(body('List_rows')?['value'])?['cr1c4_bronze_odoo_hr_employeeId']",
+                                  "item/cr1c4_id": "@items('Apply_to_each')?['id']",
+                                  "item/cr1c4_birthday": "@items('Apply_to_each')?['birthday']",
+                                  "item/cr1c4_change_status": 623500001,
+                                  "item/cr1c4_company_id": "@items('Apply_to_each')?['company_id']",
+                                  "item/cr1c4_create_date": "@items('Apply_to_each')?['create_date']",
+                                  "item/cr1c4_current_version_id": "@items('Apply_to_each')?['current_version_id']",
+                                  "item/cr1c4_data_source_id": "1",
+                                  "item/cr1c4_legal_name": "@items('Apply_to_each')?['legal_name']",
+                                  "item/cr1c4_name": "@items('Apply_to_each')?['name']",
+                                  "item/cr1c4_private_mail": "@items('Apply_to_each')?['private_email']",
+                                  "item/cr1c4_work_email": "@items('Apply_to_each')?['work_email']",
+                                  "item/cr1c4_work_phone": "@items('Apply_to_each')?['work_phone']",
+                                  "item/cr1c4_write_date": "@items('Apply_to_each')?['write_date']"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                  "operationId": "UpdateOnlyRecord",
+                                  "connectionName": "shared_commondataserviceforapps"
+                                }
+                              }
+                            }
+                          },
+                          "else": {
+                            "actions": {
+                              "Update_a_row_2": {
+                                "metadata": {
+                                  "operationMetadataId": "95fa49d1-8ae3-4c73-9464-ac1487e8e773"
+                                },
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "parameters": {
+                                    "entityName": "cr1c4_bronze_odoo_hr_employees",
+                                    "recordId": "@first(body('List_rows')?['value'])?['cr1c4_bronze_odoo_hr_employeeId']",
+                                    "item/cr1c4_id": "@items('Apply_to_each')?['id']",
+                                    "item/cr1c4_birthday": "@items('Apply_to_each')?['birthday']",
+                                    "item/cr1c4_change_status": 623500000,
+                                    "item/cr1c4_company_id": "@items('Apply_to_each')?['company_id']",
+                                    "item/cr1c4_create_date": "@items('Apply_to_each')?['create_date']",
+                                    "item/cr1c4_current_version_id": "@items('Apply_to_each')?['current_version_id']",
+                                    "item/cr1c4_data_source_id": "1",
+                                    "item/cr1c4_legal_name": "@items('Apply_to_each')?['legal_name']",
+                                    "item/cr1c4_name": "@items('Apply_to_each')?['name']",
+                                    "item/cr1c4_private_mail": "@items('Apply_to_each')?['private_email']",
+                                    "item/cr1c4_work_email": "@items('Apply_to_each')?['work_email']",
+                                    "item/cr1c4_work_phone": "@items('Apply_to_each')?['work_phone']",
+                                    "item/cr1c4_write_date": "@items('Apply_to_each')?['write_date']"
+                                  },
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                    "operationId": "UpdateOnlyRecord",
+                                    "connectionName": "shared_commondataserviceforapps"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "or": [
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['name']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_name']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@formatDateTime(items('Apply_to_each')?['birthday'],'yyyy-MM-dd')",
+                                    "@formatDateTime(first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_birthday'],'yyyy-MM-dd')"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['work_email']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_work_email']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['work_phone']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_work_phone']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['private_email']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_private_email']"
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "type": "If"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@length(body('List_rows_-_Snapshot_Employee')?['value'])",
+                            0
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                }
+              },
+              "expression": {
+                "equals": [
+                  "@length(body('List_rows')?['value'])",
+                  0
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "a72ad815-b918-4c90-abb5-43797550fcbf"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Get_rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d5d7495a-1caa-48d4-880b-444008233a36"
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "14999368-ad8e-42ed-9cbe-da64531145be"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            }
+          }
+        },
+        "Apply_to_each_1": {
+          "foreach": "@outputs('List_rows_-_Odoo_Employee_1')?['body/value']",
+          "actions": {
+            "Filter_array": {
+              "metadata": {
+                "operationMetadataId": "aba22a5d-0e5f-4c44-97a5-b5571814307d"
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Get_rows')?['body/value']",
+                "where": "@equals(items('Apply_to_each_1')?['cr1c4_id'],string(item()?['id']))"
+              }
+            },
+            "Condition_1": {
+              "actions": {
+                "Update_a_row_1": {
+                  "metadata": {
+                    "operationMetadataId": "404d23ab-9796-45f9-8af0-4b0143471d30"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_odoo_hr_employees",
+                      "recordId": "@items('Apply_to_each_1')?['cr1c4_bronze_odoo_employeeId']",
+                      "item/cr1c4_id": "@items('Apply_to_each_1')?['cr1c4_id']",
+                      "item/statecode": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Filter_array": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('Filter_array'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "77697583-59fd-4cf6-a84d-dc5a09379b1e"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Odoo_Employee_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8c185f30-3e1c-488c-9e2b-a48ca7d8ff8a"
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_Snapshot": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_odoo_employee_snapshots"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each_-_Snapshot": {
+          "foreach": "@outputs('List_rows_-_Snapshot')?['body/value']",
+          "actions": {
+            "Delete_a_row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_odoo_employee_snapshots",
+                  "recordId": "@items('Apply_to_each_-_Snapshot')?['cr1c4_bronze_odoo_employee_snapshotid']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "DeleteRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Snapshot": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_Odoo_Employee": {
+          "runAfter": {
+            "Apply_to_each_-_Snapshot": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8cbd43f5-9f42-49d6-9569-506c779464ec"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_odoo_hr_employees"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each_-_Employee": {
+          "foreach": "@outputs('List_rows_-_Odoo_Employee')?['body/value']",
+          "actions": {
+            "Add_a_new_row_1": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_odoo_employee_snapshots",
+                  "item/cr1c4_id": "@items('Apply_to_each_-_Employee')?['cr1c4_id']",
+                  "item/cr1c4_birthday": "@items('Apply_to_each_-_Employee')?['cr1c4_birthday']",
+                  "item/cr1c4_company_id": "@items('Apply_to_each_-_Employee')?['cr1c4_company_id']",
+                  "item/cr1c4_create_date": "@items('Apply_to_each_-_Employee')?['cr1c4_create_date']",
+                  "item/cr1c4_current_version_id": "@items('Apply_to_each_-_Employee')?['cr1c4_current_version_id']",
+                  "item/cr1c4_data_source_id": "@items('Apply_to_each_-_Employee')?['cr1c4_data_source_id']",
+                  "item/cr1c4_legal_name": "@items('Apply_to_each_-_Employee')?['cr1c4_legal_name']",
+                  "item/cr1c4_name": "@items('Apply_to_each_-_Employee')?['cr1c4_name']",
+                  "item/cr1c4_private_email": "@items('Apply_to_each_-_Employee')?['cr1c4_private_mail']",
+                  "item/cr1c4_work_email": "@items('Apply_to_each_-_Employee')?['cr1c4_work_email']",
+                  "item/cr1c4_work_phone": "@items('Apply_to_each_-_Employee')?['cr1c4_work_phone']",
+                  "item/cr1c4_write_date": "@items('Apply_to_each_-_Employee')?['cr1c4_write_date']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "CreateRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Odoo_Employee": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_Odoo_Employee_1": {
+          "runAfter": {
+            "Apply_to_each": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8cbd43f5-9f42-49d6-9569-506c779464ec"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_odoo_hr_employees"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

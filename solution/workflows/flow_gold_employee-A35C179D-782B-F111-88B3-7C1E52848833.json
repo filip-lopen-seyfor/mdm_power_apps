@@ -1,0 +1,224 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "List_rows_-_Silver_Employee": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_silver_employees",
+              "$filter": "statecode eq 0\nand cr1c4_matching_status ne 623500001\nand cr1c4_matching_status ne 623500003"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('List_rows_-_Silver_Employee')?['body/value']",
+          "actions": {
+            "List_rows_-_Gold_Employee": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_gold_employees",
+                  "$filter": "cr1c4_employee_sk eq '@{items('Apply_to_each')?['cr1c4_silver_employee_id']}'"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Add_a_new_row": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cr1c4_gold_employees",
+                      "item/cr1c4_address": "@items('Apply_to_each')?['cr1c4_address']",
+                      "item/cr1c4_company_mail": "@items('Apply_to_each')?['cr1c4_company_mail']",
+                      "item/cr1c4_Country_MK@odata.bind": "/cr1c4_refer_countries(@{first(outputs('List_rows_-_Country')?['body/value'])?['cr1c4_refer_countryid']})",
+                      "item/cr1c4_date_of_birth": "@items('Apply_to_each')?['cr1c4_date_of_birth']",
+                      "item/cr1c4_employee_name": "@items('Apply_to_each')?['cr1c4_employee_name']",
+                      "item/cr1c4_employee_sk": "@items('Apply_to_each')?['cr1c4_silver_employee_id']",
+                      "item/cr1c4_Gender_MK@odata.bind": "/cr1c4_refer_genders(@{first(outputs('List_rows_-_Gender')?['body/value'])?['cr1c4_refer_genderid']})",
+                      "item/cr1c4_personal_id_number": "@items('Apply_to_each')?['cr1c4_personal_id_number']",
+                      "item/cr1c4_personal_mail": "@items('Apply_to_each')?['cr1c4_personal_mail']",
+                      "item/cr1c4_phone_number": "@items('Apply_to_each')?['cr1c4_phone_number']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows_-_Gender": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Update_a_row": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "cr1c4_gold_employees",
+                        "recordId": "@first(outputs('List_rows_-_Gold_Employee')?['body/value'])?['cr1c4_gold_employeeId']",
+                        "item/cr1c4_address": "@items('Apply_to_each')?['cr1c4_address']",
+                        "item/cr1c4_company_mail": "@items('Apply_to_each')?['cr1c4_company_mail']",
+                        "item/cr1c4_Country_MK@odata.bind": "/cr1c4_refer_countries(@{first(outputs('List_rows_-_Country')?['body/value'])?['cr1c4_refer_countryid']})",
+                        "item/cr1c4_date_of_birth": "@items('Apply_to_each')?['cr1c4_date_of_birth']",
+                        "item/cr1c4_employee_name": "@items('Apply_to_each')?['cr1c4_employee_name']",
+                        "item/cr1c4_employee_sk": "@items('Apply_to_each')?['cr1c4_silver_employee_id']",
+                        "item/cr1c4_Gender_MK@odata.bind": "/cr1c4_refer_genders(@{first(outputs('List_rows_-_Gender')?['body/value'])?['cr1c4_refer_genderid']})",
+                        "item/cr1c4_personal_id_number": "@items('Apply_to_each')?['cr1c4_personal_id_number']",
+                        "item/cr1c4_personal_mail": "@items('Apply_to_each')?['cr1c4_personal_mail']",
+                        "item/cr1c4_phone_number": "@items('Apply_to_each')?['cr1c4_phone_number']"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('List_rows_-_Gold_Employee')?['body/value'])",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "List_rows_-_Country": {
+              "runAfter": {
+                "List_rows_-_Gold_Employee": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_refer_countries",
+                  "$filter": "cr1c4_country_sk eq '@{items('Apply_to_each')?['cr1c4_country_sk']}'"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "List_rows_-_Gender": {
+              "runAfter": {
+                "List_rows_-_Country": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_refer_genders",
+                  "$filter": "cr1c4_gender_sk eq '@{items('Apply_to_each')?['cr1c4_gender_sk']}'"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Silver_Employee": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fe71da3d-69bd-4a23-964d-8d6db7517ecb"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

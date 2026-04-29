@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "5db22c3a-b532-4e28-9c6b-dbe7f74e0c77"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Run_Gold_Company": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "a4db65a9-b918-4b31-88dd-066852b60836"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "a15c179d-782b-f111-88b3-7c1e52848833"
+            }
+          }
+        },
+        "Run_Gold_Department": {
+          "runAfter": {
+            "Run_Gold_Company": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b927e700-b0d3-4d49-be86-e04318559a02"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "a25c179d-782b-f111-88b3-7c1e52848833"
+            }
+          }
+        },
+        "Run_Gold_Employee": {
+          "runAfter": {
+            "Run_Gold_Department": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "29c4b3e1-14ad-4941-b306-8caf48f0c41d"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "a35c179d-782b-f111-88b3-7c1e52848833"
+            }
+          }
+        },
+        "Run_Gold_Employment": {
+          "runAfter": {
+            "Run_Gold_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "18a4e1a3-be57-4078-b1db-810d75ec7728"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "d45c179d-782b-f111-88b3-7c1e52848833"
+            }
+          }
+        },
+        "Run_Gold_Job_Title": {
+          "runAfter": {
+            "Run_Gold_Employment": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "aeb17bee-0d94-4728-9c49-1e6cebff6395"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "a05c179d-782b-f111-88b3-7c1e52848833"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

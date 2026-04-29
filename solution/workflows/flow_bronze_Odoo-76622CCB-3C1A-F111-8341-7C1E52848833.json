@@ -1,0 +1,155 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "8db64605-f7c3-4300-ada5-f973903a06a2"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Run_Ingest_Odoo_Company": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "87a88bc9-9d9e-4a03-9347-511627a8b6a4"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "8be84670-231a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_Odoo_Department": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Company": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1907f742-c427-475f-a52d-9a38a2bc9ca8"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "2f0edd4c-231a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_Odoo_Employee": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Department": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a149ea65-9502-4d8f-b11a-716d39251dbe"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "4d08c354-231a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_Odoo_Job": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c46dc591-48f2-4eb0-9cd7-4e65b1b41889"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "4d0cd15a-231a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_Odoo_Version": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Job": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5576646e-2d0c-47e7-87a0-0ba29dc7cd03"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "9c931262-231a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Work_Location": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "72004d77-d4bd-485d-aa01-4cf0667d77ec"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "Run_Ingest_Odoo_Work_Location": {
+          "runAfter": {
+            "Run_Ingest_Odoo_Version": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c5ee4b70-1031-4f25-ad37-9b233f1ea261"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "087a3868-231a-f111-8341-7c1e52848833"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

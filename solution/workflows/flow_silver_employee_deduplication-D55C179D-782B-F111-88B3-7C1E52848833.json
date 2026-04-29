@@ -1,0 +1,338 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "List_rows_-_Personal_ID_Number": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_silver_employees",
+              "$filter": "statecode eq 0 and cr1c4_personal_id_number ne null"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('List_rows_-_Personal_ID_Number')?['body/value']",
+          "actions": {
+            "List_rows_-_ID_duplicates": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_silver_employees",
+                  "$filter": "cr1c4_personal_id_number eq '@{items('Apply_to_each')?['cr1c4_personal_id_number']}'\nand cr1c4_silver_employee_id ne '@{items('Apply_to_each')?['cr1c4_silver_employee_id']}'\nand statecode eq 0\nand cr1c4_matching_status ne 623500002\nand cr1c4_matching_status ne 623500003"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "Condition": {
+              "actions": {},
+              "runAfter": {
+                "List_rows_-_ID_duplicates": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Compose_-_groupSK": {
+                    "type": "Compose",
+                    "inputs": "@guid()"
+                  },
+                  "Apply_to_each_-_ID_filtered": {
+                    "foreach": "@outputs('List_rows_-_ID_duplicates')?['body/value']",
+                    "actions": {
+                      "Update_a_row_-_duplicates": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "entityName": "cr1c4_silver_employees",
+                            "recordId": "@items('Apply_to_each_-_ID_filtered')?['cr1c4_silver_employeeId']",
+                            "item/cr1c4_duplicate_group_sk": "@outputs('Compose_-_groupSK')",
+                            "item/cr1c4_matching_status": 623500001,
+                            "item/cr1c4_personal_id_number": "@items('Apply_to_each_-_ID_filtered')?['cr1c4_personal_id_number']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateOnlyRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          }
+                        }
+                      }
+                    },
+                    "runAfter": {
+                      "Update_a_row_-_main": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "Foreach"
+                  },
+                  "Update_a_row_-_main": {
+                    "runAfter": {
+                      "Compose_-_groupSK": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "cr1c4_silver_employees",
+                        "recordId": "@items('Apply_to_each')?['cr1c4_silver_employeeId']",
+                        "item/cr1c4_duplicate_group_sk": "@outputs('Compose_-_groupSK')",
+                        "item/cr1c4_matching_status": 623500001,
+                        "item/cr1c4_personal_id_number": "@items('Apply_to_each')?['cr1c4_personal_id_number']"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('List_rows_-_ID_duplicates')?['body/value'])",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Personal_ID_Number": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_no_Personal_ID_Number": {
+          "runAfter": {
+            "Apply_to_each": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_silver_employees",
+              "$filter": "statecode eq 0\nand cr1c4_personal_id_number eq null\nand cr1c4_matching_status ne 623500003\nand cr1c4_matching_status ne 623500004"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each_1": {
+          "foreach": "@outputs('List_rows_-_no_Personal_ID_Number')?['body/value']",
+          "actions": {
+            "List_rows_-_same_critical_columns": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_silver_employees",
+                  "$filter": "statecode eq 0\nand cr1c4_personal_id_number eq null\nand cr1c4_silver_employee_id ne '@{items('Apply_to_each_1')?['cr1c4_silver_employee_id']}'\nand cr1c4_matching_status ne 623500004\nand (\n  cr1c4_employee_name eq '@{items('Apply_to_each_1')?['cr1c4_employee_name']}'\n  or cr1c4_date_of_birth eq '@{items('Apply_to_each_1')?['cr1c4_date_of_birth']}'\n  or cr1c4_phone_number eq '@{items('Apply_to_each_1')?['cr1c4_phone_number']}'\n  or cr1c4_personal_mail eq '@{items('Apply_to_each_1')?['cr1c4_personal_mail']}'\n  )"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "Condition_1": {
+              "actions": {},
+              "runAfter": {
+                "List_rows_-_same_critical_columns": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Apply_to_each_-_similiar_rows": {
+                    "foreach": "@outputs('List_rows_-_same_critical_columns')?['body/value']",
+                    "actions": {
+                      "Compose_-_score": {
+                        "type": "Compose",
+                        "inputs": "@add(\r\n  add(\r\n    if(equals(items('Apply_to_each_1')?['cr1c4_date_of_birth'],\r\n       items('Apply_to_each_-_similiar_rows')?['cr1c4_date_of_birth']), 0.5, 0),\r\n    if(equals(items('Apply_to_each_1')?['cr1c4_employee_name'],\r\n       items('Apply_to_each_-_similiar_rows')?['cr1c4_employee_name']), 0.3, 0)\r\n  ),\r\n  add(\r\n    if(equals(items('Apply_to_each_1')?['cr1c4_personal_mail'],\r\n       items('Apply_to_each_-_similiar_rows')?['cr1c4_personal_mail']), 0.15, 0),\r\n    if(equals(items('Apply_to_each_1')?['cr1c4_phone_number'],\r\n       items('Apply_to_each_-_similiar_rows')?['cr1c4_phone_number']), 0.05, 0)\r\n  )\r\n)"
+                      },
+                      "Condition_2": {
+                        "actions": {
+                          "Update_a_row_-_up_to_score": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "entityName": "cr1c4_silver_employees",
+                                "recordId": "@items('Apply_to_each_-_similiar_rows')?['cr1c4_silver_employeeId']",
+                                "item/cr1c4_duplicate_group_sk": "@outputs('Compose_-_groupSK_score')",
+                                "item/cr1c4_matching_status": 623500001
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                "operationId": "UpdateOnlyRecord",
+                                "connectionName": "shared_commondataserviceforapps"
+                              }
+                            }
+                          }
+                        },
+                        "runAfter": {
+                          "Compose_-_score": [
+                            "Succeeded"
+                          ]
+                        },
+                        "else": {
+                          "actions": {}
+                        },
+                        "expression": {
+                          "and": [
+                            {
+                              "greaterOrEquals": [
+                                "@outputs('Compose_-_score')",
+                                0.7
+                              ]
+                            }
+                          ]
+                        },
+                        "type": "If"
+                      }
+                    },
+                    "runAfter": {
+                      "Update_a_row_-_main_no_ID": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "Foreach"
+                  },
+                  "Update_a_row_-_main_no_ID": {
+                    "runAfter": {
+                      "Compose_-_groupSK_score": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "cr1c4_silver_employees",
+                        "recordId": "@items('Apply_to_each_1')?['cr1c4_silver_employeeId']",
+                        "item/cr1c4_duplicate_group_sk": "@outputs('Compose_-_groupSK_score')",
+                        "item/cr1c4_matching_status": 623500001
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  },
+                  "Compose_-_groupSK_score": {
+                    "type": "Compose",
+                    "inputs": "@guid()"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(outputs('List_rows_-_same_critical_columns')?['body/value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows_-_no_Personal_ID_Number": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fe71da3d-69bd-4a23-964d-8d6db7517ecb"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

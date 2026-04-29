@@ -1,0 +1,603 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "3c8dcdfe-d2d8-4777-b3ff-08e6b2defe7e"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "List_rows_-_Odoo_Version": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "2a1789e6-3c2e-4426-b7fb-de34f7919f8a"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "cr1c4_bronze_odoo_hr_versions",
+              "$filter": "statecode eq 0"
+            },
+            "authentication": {
+              "type": "Raw",
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+            }
+          }
+        },
+        "List_rows_-_ERPNext_Employee": {
+          "runAfter": {
+            "List_rows_-_Odoo_Version": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "202f4ee8-76bd-465b-ac45-644f98c68165"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "cr1c4_bronze_erpnext_employees",
+              "$filter": "statecode eq 0"
+            },
+            "authentication": {
+              "type": "Raw",
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+            }
+          }
+        },
+        "Apply_to_each_-_Odoo": {
+          "foreach": "@outputs('List_rows_-_Odoo_Version')?['body/value']",
+          "actions": {
+            "List_rows_-_Silver_Job_Title_1": {
+              "runAfter": {
+                "List_rows_-_Bronze_Odoo_Job": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "21961e20-ecf8-4267-b700-5e61c732df52"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_job_titles",
+                  "$filter": "cr1c4_job_title_name eq '@{split(first(body('List_rows_-_Bronze_Odoo_Job')?['value'])?['cr1c4_name'],'\"')[3]}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Mapping_Employment_Type_1": {
+              "runAfter": {
+                "List_rows_-_Silver_Job_Title_1": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "58b02cfa-8bc4-45a7-8e2a-6582fb2ca919"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_mapping_employment_types",
+                  "$filter": "cr1c4_employment_type_bk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_contract_type_id']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Department_1": {
+              "runAfter": {
+                "List_rows_-_Silver_Employee_1": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "2f5aa2b3-25f7-4d7f-8749-4a4d4b93816c"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_departments",
+                  "$filter": "cr1c4_department_bk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_department_id']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Employment_1": {
+              "runAfter": {
+                "List_rows_-_Mapping_Employment_Type_1": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "2b5000cc-4d64-41c3-b40d-1639a0188dc0"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_employments",
+                  "$filter": "cr1c4_employment_bk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_id']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Employee_1": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "53ef8e42-06a2-41b7-a6e3-181cac793bde"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_employees",
+                  "$filter": "cr1c4_employee_bk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_employee_id']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "Condition_Odoo": {
+              "actions": {
+                "Add_a_new_row": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "5496b922-53e0-4083-b062-8380408ce1f7"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr1c4_silver_employments",
+                      "item/cr1c4_data_source_sk": "@items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']",
+                      "item/cr1c4_department_sk": "@first(body('List_rows_-_Silver_Department_1')?['value'])?['cr1c4_silver_department_id']",
+                      "item/cr1c4_employee_sk": "@first(body('List_rows_-_Silver_Employee_1')?['value'])?['cr1c4_silver_employee_id']",
+                      "item/cr1c4_employment_bk": "@items('Apply_to_each_-_Odoo')?['cr1c4_id']",
+                      "item/cr1c4_employment_type_sk": "@first(body('List_rows_-_Mapping_Employment_Type_1')?['value'])?['cr1c4_employment_type_sk']",
+                      "item/cr1c4_job_title_sk": "@first(body('List_rows_-_Silver_Job_Title_1')?['value'])?['cr1c4_silver_job_title_id']",
+                      "item/cr1c4_valid_from": "@items('Apply_to_each_-_Odoo')?['cr1c4_contract_date_start']",
+                      "item/cr1c4_valid_to": "@formatDateTime('2999-12-31','yyyy-MM-dd')"
+                    },
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows_-_Silver_Employment_1": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Update_a_row": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "adb14f35-687e-4af0-a84d-004731b1e955"
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connectionName": "shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                      },
+                      "parameters": {
+                        "entityName": "cr1c4_silver_employments",
+                        "recordId": "@first(body('List_rows_-_Silver_Employment_1')?['value'])?['cr1c4_silver_employmentid']",
+                        "item/cr1c4_data_source_sk": "@items('Apply_to_each_-_Odoo')?['cr1c4_data_source_id']",
+                        "item/cr1c4_department_sk": "@first(body('List_rows_-_Silver_Department_1')?['value'])?['cr1c4_silver_department_id']",
+                        "item/cr1c4_employee_sk": "@first(body('List_rows_-_Silver_Employee_1')?['value'])?['cr1c4_silver_employee_id']",
+                        "item/cr1c4_employment_bk": "@items('Apply_to_each_-_Odoo')?['cr1c4_id']",
+                        "item/cr1c4_employment_type_sk": "@first(body('List_rows_-_Mapping_Employment_Type_1')?['value'])?['cr1c4_employment_type_sk']",
+                        "item/cr1c4_job_title_sk": "@first(body('List_rows_-_Silver_Job_Title_1')?['value'])?['cr1c4_silver_job_title_id']",
+                        "item/cr1c4_valid_from": "@items('Apply_to_each_-_Odoo')?['cr1c4_contract_date_start']",
+                        "item/cr1c4_valid_to": "@formatDateTime('2999-12-31','yyyy-MM-dd')"
+                      },
+                      "authentication": {
+                        "type": "Raw",
+                        "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('List_rows_-_Silver_Employment_1')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c1f4b19a-29da-4860-bacc-c145fb3dfd2b"
+              },
+              "type": "If"
+            },
+            "List_rows_-_Bronze_Odoo_Job": {
+              "runAfter": {
+                "List_rows_-_Silver_Department_1": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "145167e0-d8fc-41b5-9fc1-2f6571194d7c"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_bronze_odoo_hr_jobs",
+                  "$filter": "cr1c4_id eq '@{items('Apply_to_each_-_Odoo')?['cr1c4_job_id']}' "
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_ERPNext_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "9f36104a-9b1e-4ffd-a47c-0d55c8203f66"
+          },
+          "type": "Foreach"
+        },
+        "Apply_to_each_-_ERPNext": {
+          "foreach": "@outputs('List_rows_-_ERPNext_Employee')?['body/value']",
+          "actions": {
+            "Condition_ERPNext": {
+              "actions": {
+                "Add_a_new_row_1": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "9412816f-c231-4f4e-86ff-868c9db20074"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr1c4_silver_employments",
+                      "item/cr1c4_data_source_sk": "@items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']",
+                      "item/cr1c4_department_sk": "@first(body('List_rows_-_Silver_Department_2')?['value'])?['cr1c4_silver_department_id']",
+                      "item/cr1c4_employee_sk": "@first(body('List_rows_-_Silver_Employee_2')?['value'])?['cr1c4_silver_employee_id']",
+                      "item/cr1c4_employment_bk": "@items('Apply_to_each_-_ERPNext')?['cr1c4_employee_number']",
+                      "item/cr1c4_employment_type_sk": "@first(body('List_rows_-_Mapping_Employment_Type_2')?['value'])?['cr1c4_employment_type_sk']",
+                      "item/cr1c4_job_title_sk": "@first(body('List_rows_-_Silver_Job_Title_2')?['value'])?['cr1c4_silver_job_title_id']",
+                      "item/cr1c4_valid_from": "@items('Apply_to_each_-_ERPNext')?['cr1c4_date_of_joining']",
+                      "item/cr1c4_valid_to": "@formatDateTime('2999-12-31','yyyy-MM-dd')"
+                    },
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows_-_Silver_Employment_2": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Update_a_row_1": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "3a552f6a-5eae-41bf-b54c-336109d75dd7"
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connectionName": "shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                      },
+                      "parameters": {
+                        "entityName": "cr1c4_silver_employments",
+                        "recordId": "@first(body('List_rows_-_Silver_Employment_1')?['value'])?['cr1c4_silver_employmentid']",
+                        "item/cr1c4_data_source_sk": "@items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']",
+                        "item/cr1c4_department_sk": "@first(body('List_rows_-_Silver_Department_2')?['value'])?['cr1c4_silver_department_id']",
+                        "item/cr1c4_employee_sk": "@first(body('List_rows_-_Silver_Employee_2')?['value'])?['cr1c4_silver_employee_id']",
+                        "item/cr1c4_employment_bk": "@items('Apply_to_each_-_ERPNext')?['cr1c4_employee_number']",
+                        "item/cr1c4_employment_type_sk": "@first(body('List_rows_-_Mapping_Employment_Type_2')?['value'])?['cr1c4_employment_type_sk']",
+                        "item/cr1c4_job_title_sk": "@first(body('List_rows_-_Silver_Job_Title_2')?['value'])?['cr1c4_silver_job_title_id']",
+                        "item/cr1c4_valid_from": "@items('Apply_to_each_-_ERPNext')?['cr1c4_date_of_joining']",
+                        "item/cr1c4_valid_to": "@formatDateTime('2999-12-31','yyyy-MM-dd')"
+                      },
+                      "authentication": {
+                        "type": "Raw",
+                        "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('List_rows_-_Silver_Employment_2')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c1f4b19a-29da-4860-bacc-c145fb3dfd2b"
+              },
+              "type": "If"
+            },
+            "List_rows_-_Silver_Employee_2": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "e896799f-a861-42ec-9ae5-a311ea5e99b1"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_employees",
+                  "$filter": "cr1c4_employee_bk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_employee_number']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Department_2": {
+              "runAfter": {
+                "List_rows_-_Silver_Employee_2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "5159fca2-c605-4bb3-883f-19c77a69fc55"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_departments",
+                  "$filter": "cr1c4_department_bk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_department']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Job_Title_2": {
+              "runAfter": {
+                "List_rows_-_Silver_Department_2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "86d1b7c2-664d-48bd-8677-bcf7fc0e2072"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_job_titles",
+                  "$filter": "cr1c4_job_title_name eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_designation']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Mapping_Employment_Type_2": {
+              "runAfter": {
+                "List_rows_-_Silver_Job_Title_2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "daf9f040-c149-4d1b-b835-76c6aa7fc11d"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_mapping_employment_types",
+                  "$filter": "cr1c4_employment_type_bk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_employment_type']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "List_rows_-_Silver_Employment_2": {
+              "runAfter": {
+                "List_rows_-_Mapping_Employment_Type_2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "b70b5b2c-f0d5-4fd8-9d4d-439cf87656e6"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_silver_employments",
+                  "$filter": "cr1c4_employment_bk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_employee_number']}' and cr1c4_data_source_sk eq '@{items('Apply_to_each_-_ERPNext')?['cr1c4_data_source_id']}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Apply_to_each_-_Odoo": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ffd8857a-054a-4be4-96ea-9e809deace5d"
+          },
+          "type": "Foreach"
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each_-_ERPNext": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a23f1494-b7c7-488d-a352-e55ba512b948"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

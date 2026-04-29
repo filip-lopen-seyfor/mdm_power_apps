@@ -1,0 +1,139 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "9bccd82a-cfe0-4ead-a9e5-2e3e6276f517"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Run_Ingest_ERPNext_Branch": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "3f1752aa-925e-44e2-ae5f-c3d6c7db65e1"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "4c5fadef-1d1a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_ERPNext_Company": {
+          "runAfter": {
+            "Run_Ingest_ERPNext_Branch": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d5f8c1eb-b772-4625-b6f5-815bf4c7404e"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "c89e9802-1e1a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_ERPNext_Department": {
+          "runAfter": {
+            "Run_Ingest_ERPNext_Company": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6775dc70-b93f-4106-b236-3f89889fee8b"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "1e5152e4-171a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_ERPNext_Designation": {
+          "runAfter": {
+            "Run_Ingest_ERPNext_Department": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "0fad9246-2ee1-406c-b889-faa7d01fe048"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "678939e2-121a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Ingest_ERPNext_Employee": {
+          "runAfter": {
+            "Run_Ingest_ERPNext_Designation": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "95c9c621-41c2-4670-bb34-f9d71f694493"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "98d78e55-a918-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Run_Ingest_ERPNext_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d1fd4123-803d-46c3-afaa-22bb814128a9"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

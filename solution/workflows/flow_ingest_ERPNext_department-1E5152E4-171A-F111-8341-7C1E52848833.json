@@ -1,0 +1,370 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ac6b948d-521f-4539-b7cb-b160dd73123a"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "HTTP": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "bdc0ebaa-3ef5-40a3-b838-ed0c46934ada"
+          },
+          "type": "Http",
+          "inputs": {
+            "method": "GET",
+            "uri": "https://nemocnicekr.f.frappe.cloud/api/resource/Department?fields=%5B%22name%22,%22department_name%22,%22parent_department%22,%22company%22,%22is_group%22,%22creation%22,%22modified%22%5D&limit_page_length=500",
+            "headers": {
+              "Authorization": "token cdaea95a0481061:c2abdb6f4d11e1a",
+              "Accept": "application/json"
+            }
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        },
+        "Parse_JSON": {
+          "runAfter": {
+            "HTTP": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "83108e64-af75-4ce9-817e-bcc8f97db1d6"
+          },
+          "type": "ParseJson",
+          "inputs": {
+            "content": "@body('HTTP')",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "department_name": {
+                        "type": "string"
+                      },
+                      "parent_department": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "is_group": {
+                        "type": "integer"
+                      },
+                      "creation": {
+                        "type": "string"
+                      },
+                      "modified": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@body('Parse_JSON')?['data']",
+          "actions": {
+            "List_rows": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "2d2ec7df-446d-4fa9-b1a6-04cbf66cebaf"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr1c4_bronze_erpnext_departments",
+                  "$filter": "cr1c4_name eq '@{string(item()?['name'])}'"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Add_a_new_row": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "d3eb8879-5a5e-4ba3-b888-6faf6eda902c"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_erpnext_departments",
+                      "item/cr1c4_name": "@items('Apply_to_each')?['name']",
+                      "item/cr1c4_company": "@items('Apply_to_each')?['company']",
+                      "item/cr1c4_creation": "@items('Apply_to_each')?['creation']",
+                      "item/cr1c4_data_source_id": "2",
+                      "item/cr1c4_department_name": "@items('Apply_to_each')?['department_name']",
+                      "item/cr1c4_is_group": "@if(equals(items('Apply_to_each')?['is_group'], 1), true, false)",
+                      "item/cr1c4_modified": "@items('Apply_to_each')?['modified']",
+                      "item/cr1c4_parent_department": "@items('Apply_to_each')?['parent_department']"
+                    },
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Update_a_row": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "388b5c6f-787d-4c4b-b20c-34d235470e1c"
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connectionName": "shared_commondataserviceforapps",
+                        "operationId": "UpdateOnlyRecord",
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                      },
+                      "parameters": {
+                        "entityName": "cr1c4_bronze_erpnext_departments",
+                        "recordId": "@first(body('List_rows')?['value'])?['cr1c4_bronze_erpnext_departmentId']",
+                        "item/cr1c4_name": "@items('Apply_to_each')?['name']",
+                        "item/cr1c4_company": "@items('Apply_to_each')?['company']",
+                        "item/cr1c4_creation": "@items('Apply_to_each')?['creation']",
+                        "item/cr1c4_data_source_id": "2",
+                        "item/cr1c4_department_name": "@items('Apply_to_each')?['department_name']",
+                        "item/cr1c4_is_group": "@if(equals(items('Apply_to_each')?['is_group'], 1), true, false)",
+                        "item/cr1c4_modified": "@items('Apply_to_each')?['modified']",
+                        "item/cr1c4_parent_department": "@items('Apply_to_each')?['parent_department']"
+                      },
+                      "authentication": {
+                        "type": "Raw",
+                        "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('List_rows')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "f88d06fe-6b80-4671-bf14-679024b9abc5"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Parse_JSON": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fa5130af-0604-46aa-b068-9b515e83b6c0"
+          },
+          "type": "Foreach"
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "07fe4fa9-ab67-48d6-9e45-8073929a1eb0"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "List_rows_1": {
+          "runAfter": {
+            "Apply_to_each": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1a84d4b5-8b8e-4b66-8cb6-902a136a538a"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "cr1c4_bronze_erpnext_departments"
+            },
+            "authentication": {
+              "type": "Raw",
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+            }
+          }
+        },
+        "Apply_to_each_1": {
+          "foreach": "@outputs('List_rows_1')?['body/value']",
+          "actions": {
+            "Filter_array": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "a35e8c36-1544-4200-8f2b-7d0ac4cc8c45"
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@body('Parse_JSON')?['data']",
+                "where": "@equals(items('Apply_to_each_1')?['cr1c4_name'],item()?['name'])"
+              }
+            },
+            "Condition_1": {
+              "actions": {
+                "Update_a_row_1": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "0ea594c4-f8d7-4c9a-a4f8-d2b17e242600"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_erpnext_departments",
+                      "recordId": "@items('Apply_to_each_1')?['cr1c4_bronze_erpnext_departmentid']",
+                      "item/cr1c4_name": "@items('Apply_to_each_1')?['cr1c4_name']",
+                      "item/statecode": 1
+                    },
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Filter_array": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('Filter_array'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "cc5cd61e-f5e0-4c84-a1e1-80d45f1b3b34"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "2367150e-03fb-41d9-bdfb-bf42aaa77cdc"
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

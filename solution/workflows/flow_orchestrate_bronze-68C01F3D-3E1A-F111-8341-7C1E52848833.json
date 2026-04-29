@@ -1,0 +1,63 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "5bb33d40-096e-4bde-9290-b1702b15de2b"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Run_Bronze_ERPNext": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "c327293c-1dc4-4064-a869-b7676c1ad742"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "0214043b-391a-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Bronze_Odoo": {
+          "runAfter": {
+            "Run_Bronze_ERPNext": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "456e6100-d894-464c-9e78-48825a56fd99"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "76622ccb-3c1a-f111-8341-7c1e52848833"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

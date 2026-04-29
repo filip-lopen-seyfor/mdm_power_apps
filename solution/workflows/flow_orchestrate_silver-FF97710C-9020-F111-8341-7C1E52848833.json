@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "f33ee157-eec4-400e-8776-6f0ff8390841"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Run_Silver_Company": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "1753d68a-dd7a-48a8-9788-72fae70ffb05"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "88605e81-5620-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Silver_Department": {
+          "runAfter": {
+            "Run_Silver_Company": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5ad26157-1084-49f8-8b17-a5ad47f0df68"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "b76d5a2b-5b20-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Silver_Job_Title": {
+          "runAfter": {
+            "Run_Silver_Department": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c6c7fea2-d859-417d-b7bf-36014c057bd2"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "b45d6aac-6420-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Silver_Employee": {
+          "runAfter": {
+            "Run_Silver_Job_Title": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8ef5acc3-c721-49b1-b88f-98077e9b817f"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "f0d6c412-9020-f111-8341-7c1e52848833"
+            }
+          }
+        },
+        "Run_Silver_Employment": {
+          "runAfter": {
+            "Run_Silver_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "eeaf579f-f23c-4bd1-ba33-77cc6e3fdcd3"
+          },
+          "type": "Workflow",
+          "inputs": {
+            "host": {
+              "workflowReferenceName": "f0cafbd5-5725-f111-8341-7c1e52848833"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

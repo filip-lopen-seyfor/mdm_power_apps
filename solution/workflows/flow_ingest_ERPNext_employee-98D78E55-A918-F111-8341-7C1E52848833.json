@@ -1,0 +1,662 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr1c4_sharedcommondataserviceforapps_6ec15"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ac6b948d-521f-4539-b7cb-b160dd73123a"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "HTTP": {
+          "runAfter": {
+            "Apply_to_each_-_Employee": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "bdc0ebaa-3ef5-40a3-b838-ed0c46934ada"
+          },
+          "type": "Http",
+          "inputs": {
+            "uri": "https://nemocnicekr.f.frappe.cloud/api/resource/Employee?fields=%5B%22employee_number%22,%22employee_name%22,%22gender%22,%22date_of_birth%22,%22date_of_joining%22,%22status%22,%22company%22,%22department%22,%22designation%22,%22branch%22,%22cell_number%22,%22personal_email%22,%22company_email%22,%22current_address%22,%22passport_number%22,%22place_of_issue%22,%22employment_type%22,%22creation%22,%22modified%22%5D&limit_page_length=500",
+            "method": "GET",
+            "headers": {
+              "Authorization": "token cdaea95a0481061:c2abdb6f4d11e1a",
+              "Accept": "application/json"
+            }
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        },
+        "Parse_JSON": {
+          "runAfter": {
+            "HTTP": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "83108e64-af75-4ce9-817e-bcc8f97db1d6"
+          },
+          "type": "ParseJson",
+          "inputs": {
+            "content": "@body('HTTP')",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "employee_number": {
+                        "type": "string"
+                      },
+                      "employee_name": {
+                        "type": "string"
+                      },
+                      "gender": {
+                        "type": "string"
+                      },
+                      "date_of_birth": {
+                        "type": "string"
+                      },
+                      "date_of_joining": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "company": {
+                        "type": "string"
+                      },
+                      "department": {
+                        "type": "string"
+                      },
+                      "designation": {
+                        "type": "string"
+                      },
+                      "branch": {
+                        "type": "string"
+                      },
+                      "cell_number": {
+                        "type": "string"
+                      },
+                      "personal_email": {
+                        "type": "string"
+                      },
+                      "company_email": {
+                        "type": "string"
+                      },
+                      "current_address": {
+                        "type": "string"
+                      },
+                      "passport_number": {
+                        "type": "string"
+                      },
+                      "place_of_issue": {
+                        "type": "string"
+                      },
+                      "employment_type": {
+                        "type": "string"
+                      },
+                      "creation": {
+                        "type": "string"
+                      },
+                      "modified": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "employee_number"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@body('Parse_JSON')?['data']",
+          "actions": {
+            "List_rows": {
+              "metadata": {
+                "operationMetadataId": "2d2ec7df-446d-4fa9-b1a6-04cbf66cebaf"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_erpnext_employees",
+                  "$filter": "cr1c4_employee_number eq '@{items('Apply_to_each')?['employee_number']}'"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Add_a_new_row": {
+                  "metadata": {
+                    "operationMetadataId": "cb9d3dc7-3b2a-4435-bdaf-7b022c162220"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_erpnext_employees",
+                      "item/cr1c4_employee_number": "@items('Apply_to_each')?['employee_number']",
+                      "item/cr1c4_branch": "@items('Apply_to_each')?['branch']",
+                      "item/cr1c4_cell_number": "@items('Apply_to_each')?['cell_number']",
+                      "item/cr1c4_change_status": 623500000,
+                      "item/cr1c4_company": "@items('Apply_to_each')?['company']",
+                      "item/cr1c4_company_mail": "@items('Apply_to_each')?['company_email']",
+                      "item/cr1c4_creation": "@items('Apply_to_each')?['creation']",
+                      "item/cr1c4_current_address": "@items('Apply_to_each')?['current_address']",
+                      "item/cr1c4_data_source_id": "2",
+                      "item/cr1c4_date_of_birth": "@items('Apply_to_each')?['date_of_birth']",
+                      "item/cr1c4_date_of_joining": "@items('Apply_to_each')?['date_of_joining']",
+                      "item/cr1c4_department": "@items('Apply_to_each')?['department']",
+                      "item/cr1c4_designation": "@items('Apply_to_each')?['designation']",
+                      "item/cr1c4_employee_name": "@items('Apply_to_each')?['employee_name']",
+                      "item/cr1c4_employment_type": "@items('Apply_to_each')?['employment_type']",
+                      "item/cr1c4_gender": "@items('Apply_to_each')?['gender']",
+                      "item/cr1c4_identification_number": "@items('Apply_to_each')?['passport_number']",
+                      "item/cr1c4_modified": "@items('Apply_to_each')?['modified']",
+                      "item/cr1c4_personal_mail": "@items('Apply_to_each')?['personal_email']",
+                      "item/cr1c4_place_of_issue": "@items('Apply_to_each')?['place_of_issue']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "List_rows": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "List_rows_-_Snapshot_Employee": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "cr1c4_bronze_erpnext_employee_snapshots",
+                        "$filter": "cr1c4_employeenumber eq '@{items('Apply_to_each')?['employee_number']}'"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "ListRecords",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  },
+                  "Condition_2": {
+                    "actions": {},
+                    "runAfter": {
+                      "List_rows_-_Snapshot_Employee": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Condition_3": {
+                          "actions": {
+                            "Update_a_row_-_2": {
+                              "metadata": {
+                                "operationMetadataId": "a678d125-10e4-409b-8a10-6aabf7cf06f5"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "entityName": "cr1c4_bronze_erpnext_employees",
+                                  "recordId": "@first(body('List_rows')?['value'])?['cr1c4_bronze_erpnext_employeeId']",
+                                  "item/cr1c4_employee_number": "@items('Apply_to_each')?['employee_number']",
+                                  "item/cr1c4_branch": "@items('Apply_to_each')?['branch']",
+                                  "item/cr1c4_cell_number": "@items('Apply_to_each')?['cell_number']",
+                                  "item/cr1c4_change_status": 623500001,
+                                  "item/cr1c4_company": "@items('Apply_to_each')?['company']",
+                                  "item/cr1c4_company_mail": "@items('Apply_to_each')?['company_email']",
+                                  "item/cr1c4_creation": "@items('Apply_to_each')?['creation']",
+                                  "item/cr1c4_current_address": "@items('Apply_to_each')?['current_address']",
+                                  "item/cr1c4_data_source_id": "2",
+                                  "item/cr1c4_date_of_birth": "@items('Apply_to_each')?['date_of_birth']",
+                                  "item/cr1c4_date_of_joining": "@items('Apply_to_each')?['date_of_joining']",
+                                  "item/cr1c4_department": "@items('Apply_to_each')?['department']",
+                                  "item/cr1c4_designation": "@items('Apply_to_each')?['designation']",
+                                  "item/cr1c4_employee_name": "@items('Apply_to_each')?['employee_name']",
+                                  "item/cr1c4_employment_type": "@items('Apply_to_each')?['employment_type']",
+                                  "item/cr1c4_gender": "@items('Apply_to_each')?['gender']",
+                                  "item/cr1c4_identification_number": "@items('Apply_to_each')?['passport_number']",
+                                  "item/cr1c4_modified": "@items('Apply_to_each')?['modified']",
+                                  "item/cr1c4_personal_mail": "@items('Apply_to_each')?['personal_email']",
+                                  "item/cr1c4_place_of_issue": "@items('Apply_to_each')?['place_of_issue']"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                  "operationId": "UpdateOnlyRecord",
+                                  "connectionName": "shared_commondataserviceforapps"
+                                }
+                              }
+                            }
+                          },
+                          "else": {
+                            "actions": {
+                              "Update_a_row_2": {
+                                "metadata": {
+                                  "operationMetadataId": "a678d125-10e4-409b-8a10-6aabf7cf06f5"
+                                },
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "parameters": {
+                                    "entityName": "cr1c4_bronze_erpnext_employees",
+                                    "recordId": "@first(body('List_rows')?['value'])?['cr1c4_bronze_erpnext_employeeId']",
+                                    "item/cr1c4_employee_number": "@items('Apply_to_each')?['employee_number']",
+                                    "item/cr1c4_branch": "@items('Apply_to_each')?['branch']",
+                                    "item/cr1c4_cell_number": "@items('Apply_to_each')?['cell_number']",
+                                    "item/cr1c4_change_status": 623500000,
+                                    "item/cr1c4_company": "@items('Apply_to_each')?['company']",
+                                    "item/cr1c4_company_mail": "@items('Apply_to_each')?['company_email']",
+                                    "item/cr1c4_creation": "@items('Apply_to_each')?['creation']",
+                                    "item/cr1c4_current_address": "@items('Apply_to_each')?['current_address']",
+                                    "item/cr1c4_data_source_id": "2",
+                                    "item/cr1c4_date_of_birth": "@items('Apply_to_each')?['date_of_birth']",
+                                    "item/cr1c4_date_of_joining": "@items('Apply_to_each')?['date_of_joining']",
+                                    "item/cr1c4_department": "@items('Apply_to_each')?['department']",
+                                    "item/cr1c4_designation": "@items('Apply_to_each')?['designation']",
+                                    "item/cr1c4_employee_name": "@items('Apply_to_each')?['employee_name']",
+                                    "item/cr1c4_employment_type": "@items('Apply_to_each')?['employment_type']",
+                                    "item/cr1c4_gender": "@items('Apply_to_each')?['gender']",
+                                    "item/cr1c4_identification_number": "@items('Apply_to_each')?['passport_number']",
+                                    "item/cr1c4_modified": "@items('Apply_to_each')?['modified']",
+                                    "item/cr1c4_personal_mail": "@items('Apply_to_each')?['personal_email']",
+                                    "item/cr1c4_place_of_issue": "@items('Apply_to_each')?['place_of_issue']"
+                                  },
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                    "operationId": "UpdateOnlyRecord",
+                                    "connectionName": "shared_commondataserviceforapps"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "or": [
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['employee_name']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_employee_name']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['personal_email']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_personal_mail']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['company_email']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_company_mail']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['current_address']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_current_address']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@formatDateTime(items('Apply_to_each')?['date_of_birth'],'yyyy-MM-dd')",
+                                    "@formatDateTime(first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_date_of_birth'],'yyyy-MM-dd')"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['passport_number']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_identification_number']"
+                                  ]
+                                }
+                              },
+                              {
+                                "not": {
+                                  "equals": [
+                                    "@items('Apply_to_each')?['cell_number']",
+                                    "@first(body('List_rows_-_Snapshot_Employee')?['value'])?['cr1c4_cell_number']"
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "type": "If"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@length(body('List_rows_-_Snapshot_Employee')?['value'])",
+                            0
+                          ]
+                        },
+                        {
+                          "equals": [
+                            "",
+                            ""
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('List_rows')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "f88d06fe-6b80-4671-bf14-679024b9abc5"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Parse_JSON": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fa5130af-0604-46aa-b068-9b515e83b6c0"
+          },
+          "type": "Foreach"
+        },
+        "Apply_to_each_1": {
+          "foreach": "@outputs('List_rows_-_ERPNext_Employee_1')?['body/value']",
+          "actions": {
+            "Filter_array": {
+              "metadata": {
+                "operationMetadataId": "7c46aaa0-ffe0-411d-9444-bfeb5d7501e2"
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@body('Parse_JSON')?['data']",
+                "where": "@equals(items('Apply_to_each_1')?['cr1c4_employee_number'],item()?['employee_number'])"
+              }
+            },
+            "Condition_1": {
+              "actions": {
+                "Update_a_row_4": {
+                  "metadata": {
+                    "operationMetadataId": "7f2932ca-0103-4e32-ac2c-ddc89641f6b3"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cr1c4_bronze_erpnext_employees",
+                      "recordId": "@items('Apply_to_each_1')?['cr1c4_bronze_erpnext_employeeId']",
+                      "item/cr1c4_employee_number": "@items('Apply_to_each_1')?['cr1c4_employee_number']",
+                      "item/statecode": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Filter_array": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(body('Filter_array'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "ccc2dcdd-53c6-4be3-98dd-ff2245c2bafa"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_rows_-_ERPNext_Employee_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "90eb2d46-0ec0-497e-8fe5-c2a23517ed30"
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_Snapshot": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_erpnext_employee_snapshots"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each_-_Snapshot": {
+          "foreach": "@outputs('List_rows_-_Snapshot')?['body/value']",
+          "actions": {
+            "Delete_a_row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_erpnext_employee_snapshots",
+                  "recordId": "@items('Apply_to_each_-_Snapshot')?['cr1c4_bronze_erpnext_employee_snapshotid']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "DeleteRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_Snapshot": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "List_rows_-_ERPNext_Employee": {
+          "runAfter": {
+            "Apply_to_each_-_Snapshot": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8cbd43f5-9f42-49d6-9569-506c779464ec"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_erpnext_employees"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        },
+        "Apply_to_each_-_Employee": {
+          "foreach": "@outputs('List_rows_-_ERPNext_Employee')?['body/value']",
+          "actions": {
+            "Add_a_new_row_1": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cr1c4_bronze_erpnext_employee_snapshots",
+                  "item/cr1c4_employeenumber": "@items('Apply_to_each_-_Employee')?['cr1c4_employee_number']",
+                  "item/cr1c4_branch": "@items('Apply_to_each_-_Employee')?['cr1c4_branch']",
+                  "item/cr1c4_cell_number": "@items('Apply_to_each_-_Employee')?['cr1c4_cell_number']",
+                  "item/cr1c4_company": "@items('Apply_to_each_-_Employee')?['cr1c4_company']",
+                  "item/cr1c4_company_mail": "@items('Apply_to_each_-_Employee')?['cr1c4_company_mail']",
+                  "item/cr1c4_creation": "@items('Apply_to_each_-_Employee')?['cr1c4_creation']",
+                  "item/cr1c4_current_address": "@items('Apply_to_each_-_Employee')?['cr1c4_current_address']",
+                  "item/cr1c4_data_source_id": "@items('Apply_to_each_-_Employee')?['cr1c4_data_source_id']",
+                  "item/cr1c4_date_of_birth": "@items('Apply_to_each_-_Employee')?['cr1c4_date_of_birth']",
+                  "item/cr1c4_date_of_joining": "@items('Apply_to_each_-_Employee')?['cr1c4_date_of_joining']",
+                  "item/cr1c4_department": "@items('Apply_to_each_-_Employee')?['cr1c4_department']",
+                  "item/cr1c4_designation": "@items('Apply_to_each_-_Employee')?['cr1c4_designation']",
+                  "item/cr1c4_employee_name": "@items('Apply_to_each_-_Employee')?['cr1c4_employee_name']",
+                  "item/cr1c4_employment_type": "@items('Apply_to_each_-_Employee')?['cr1c4_employment_type']",
+                  "item/cr1c4_gender": "@items('Apply_to_each_-_Employee')?['cr1c4_gender']",
+                  "item/cr1c4_identification_number": "@items('Apply_to_each_-_Employee')?['cr1c4_identification_number']",
+                  "item/cr1c4_modified": "@items('Apply_to_each_-_Employee')?['cr1c4_modified']",
+                  "item/cr1c4_personal_mail": "@items('Apply_to_each_-_Employee')?['cr1c4_personal_mail']",
+                  "item/cr1c4_place_of_issue": "@items('Apply_to_each_-_Employee')?['cr1c4_place_of_issue']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "CreateRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "List_rows_-_ERPNext_Employee": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Apply_to_each_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fe71da3d-69bd-4a23-964d-8d6db7517ecb"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "value": "Success"
+            }
+          }
+        },
+        "List_rows_-_ERPNext_Employee_1": {
+          "runAfter": {
+            "Apply_to_each": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8cbd43f5-9f42-49d6-9569-506c779464ec"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cr1c4_bronze_erpnext_employees"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
