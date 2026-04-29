@@ -1,0 +1,39 @@
+<appaction uniquename="cr1c4__Mscrm.HomepageGrid.{!EntityLogicalName}.SaveFiltersToCurrentSystemView!cr1c4_app_MDM!cr1c4_gold_company!1">
+  <appmoduleid>
+    <uniquename>cr1c4_app_MDM</uniquename>
+  </appmoduleid>
+  <buttonaccessibilitytext default="Save Filters to Current System View">
+    <label description="Save Filters to Current System View" languagecode="1029" />
+    <label description="Save Filters to Current System View" languagecode="1033" />
+  </buttonaccessibilitytext>
+  <buttonlabeltext default="Save Filters to Current System View">
+    <label description="Save Filters to Current System View" languagecode="1029" />
+    <label description="Save Filters to Current System View" languagecode="1033" />
+  </buttonlabeltext>
+  <buttontooltipdescription default="Save the filters for the current system view.">
+    <label description="Save the filters for the current system view." languagecode="1029" />
+    <label description="Save the filters for the current system view." languagecode="1033" />
+  </buttontooltipdescription>
+  <buttontooltiptitle default="Save Filters to Current System View">
+    <label description="Save Filters to Current System View" languagecode="1029" />
+    <label description="Save Filters to Current System View" languagecode="1033" />
+  </buttontooltiptitle>
+  <context>1</context>
+  <contextentity>
+    <logicalname>cr1c4_gold_company</logicalname>
+  </contextentity>
+  <contextvalue>cr1c4_gold_company</contextvalue>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>Mscrm.HomepageGrid.{!EntityLogicalName}.SaveFiltersToCurrentSystemView</name>
+  <onclickeventtype>0</onclickeventtype>
+  <origin>2</origin>
+  <sequence>1300300030.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>2</visibilitytype>
+</appaction>

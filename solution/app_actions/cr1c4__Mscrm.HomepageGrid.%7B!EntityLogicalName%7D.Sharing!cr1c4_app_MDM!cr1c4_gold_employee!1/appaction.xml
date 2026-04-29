@@ -1,0 +1,45 @@
+<appaction uniquename="cr1c4__Mscrm.HomepageGrid.{!EntityLogicalName}.Sharing!cr1c4_app_MDM!cr1c4_gold_employee!1">
+  <appmoduleid>
+    <uniquename>cr1c4_app_MDM</uniquename>
+  </appmoduleid>
+  <buttonaccessibilitytext default="Share">
+    <label description="Share" languagecode="1029" />
+    <label description="Share" languagecode="1033" />
+  </buttonaccessibilitytext>
+  <buttonlabeltext default="Share">
+    <label description="Share" languagecode="1029" />
+    <label description="Share" languagecode="1033" />
+  </buttonlabeltext>
+  <buttontooltipdescription default="Share these {EntityLogicalNameCollectionMarker} with selected people or teams, but continue to own the records.">
+    <label description="Share these {EntityLogicalNameCollectionMarker} with selected people or teams, but continue to own the records." languagecode="1029" />
+    <label description="Share these {EntityLogicalNameCollectionMarker} with selected people or teams, but continue to own the records." languagecode="1033" />
+  </buttontooltipdescription>
+  <buttontooltiptitle default="Share">
+    <label description="Share" languagecode="1029" />
+    <label description="Share" languagecode="1033" />
+  </buttontooltiptitle>
+  <context>1</context>
+  <contextentity>
+    <logicalname>cr1c4_gold_employee</logicalname>
+  </contextentity>
+  <contextvalue>cr1c4_gold_employee</contextvalue>
+  <fonticon>$clientsvg:Share</fonticon>
+  <hidden>1</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>Mscrm.HomepageGrid.{!EntityLogicalName}.Sharing</name>
+  <onclickeventjavascriptfunctionname>XrmCore.Commands.Share.shareSelectedRecords</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":12,"value":null},{"type":24,"value":null},{"type":8,"value":null}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>adea1aea-b2aa-e611-80d6-00155d88c343</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>2</origin>
+  <sequence>1000300050.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>2</visibilitytype>
+</appaction>

@@ -1,0 +1,35 @@
+<appaction uniquename="cr1c4__Mscrm.HomepageGrid.{!EntityLogicalName}.Chart.Edit!cr1c4_app_MDM!cr1c4_gold_company!1">
+  <appmoduleid>
+    <uniquename>cr1c4_app_MDM</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Edit Chart">
+    <label description="Edit Chart" languagecode="1029" />
+    <label description="Edit Chart" languagecode="1033" />
+  </buttonlabeltext>
+  <buttontooltipdescription default="Edit this chart.">
+    <label description="Edit this chart." languagecode="1029" />
+    <label description="Edit this chart." languagecode="1033" />
+  </buttontooltipdescription>
+  <buttontooltiptitle default="Edit Chart">
+    <label description="Edit Chart" languagecode="1029" />
+    <label description="Edit Chart" languagecode="1033" />
+  </buttontooltiptitle>
+  <context>1</context>
+  <contextentity>
+    <logicalname>cr1c4_gold_company</logicalname>
+  </contextentity>
+  <contextvalue>cr1c4_gold_company</contextvalue>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>Mscrm.HomepageGrid.{!EntityLogicalName}.Chart.Edit</name>
+  <onclickeventtype>0</onclickeventtype>
+  <origin>2</origin>
+  <sequence>1150200030.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>2</visibilitytype>
+</appaction>

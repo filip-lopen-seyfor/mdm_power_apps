@@ -1,0 +1,41 @@
+<appaction uniquename="cr1c4__Mscrm.HomepageGrid.{!EntityLogicalName}.NavigateToHomepageGrid!cr1c4_app_MDM!cr1c4_gold_company!1">
+  <appmoduleid>
+    <uniquename>cr1c4_app_MDM</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="See all records">
+    <label description="See all records" languagecode="1029" />
+    <label description="See all records" languagecode="1033" />
+  </buttonlabeltext>
+  <buttontooltipdescription default="See all the entity records you have access to">
+    <label description="See all the entity records you have access to" languagecode="1029" />
+    <label description="See all the entity records you have access to" languagecode="1033" />
+  </buttontooltipdescription>
+  <buttontooltiptitle default="See all records">
+    <label description="See all records" languagecode="1029" />
+    <label description="See all records" languagecode="1033" />
+  </buttontooltiptitle>
+  <context>1</context>
+  <contextentity>
+    <logicalname>cr1c4_gold_company</logicalname>
+  </contextentity>
+  <contextvalue>cr1c4_gold_company</contextvalue>
+  <fonticon>TableGroup</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>Mscrm.HomepageGrid.{!EntityLogicalName}.NavigateToHomepageGrid</name>
+  <onclickeventjavascriptfunctionname>XrmCore.Commands.NavigateToGrid.navigateToHomepageGrid</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":12,"value":null},{"type":8,"value":null}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>adea1aea-b2aa-e611-80d6-00155d88c343</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>2</origin>
+  <sequence>1000110018.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>2</visibilitytype>
+</appaction>
